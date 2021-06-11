@@ -1,5 +1,4 @@
 #include <Ethernet.h>
-
 #include <Adafruit_NeoPixel.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h> 
@@ -10,7 +9,9 @@ const char *WIFI_SSID = "SSID";
 const char *WIFI_PASS = "PASSWORD";
 
 // What PIN the NeoPixel is on
+// This is D1 on the D1 Mini, so Pin 5
 #define PIN 5
+// Setup variable to use to turn the color white for the first run
 int first_run; 
 // Create Webserver on port 1337
 ESP8266WebServer webserver(1337);
@@ -24,60 +25,61 @@ ESP8266WebServer webserver(1337);
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
-/* Just a little test message.  Go to http://192.168.4.1:1337 in a web browser
- * connected to this access point to see it.
- */
+// Go to http://192.168.4.1:1337 in a web browser
+//connected to this access point to see it. this will change the LED's Red warning someone is on server
+//
 void rootPage() {
   webserver.send(200, "text/html", "<h1>ZnNrIG9mZiB5b3Ugd2FubmEgYmUgaGFja2Vy</h1>");
   colorWipe(strip.Color(255, 0, 0), 50); // Turn Strip Red
    
 }
 // 404 Page to be desplayed 
+// having issueschanging the color, every page I go to it loads the 404 so will blink RED 
 void notfoundPage() {
   webserver.send(200, "text/plain", "DC423: YOU'VE MADE THE HACKER UNHAPPY");
   if (first_run == 0){
     theaterChase(strip.Color(127, 0, 0), 50); // Chase Strip Red 
   }
 }
-// This will be the page where the control of the lightshow happens. 
+// This will be the page where the control of the lightshow happens. This is the main control page 
 void lightshowPage(){
   webserver.send(200, "text/html", webpageBuilder()); 
 }
-
+// Change color to blue, and show the changing options
 void bluePage(){
   webserver.send(200, "text/html", webpageBuilder());
   colorWipe(strip.Color(0, 0, 255), 50); // Blue
 }
-
+// Change color to green and show the changing options
 void greenPage(){
   webserver.send(200, "text/html", webpageBuilder());
   colorWipe(strip.Color(0,255,0),50); // Green
 }
-
+// Change color to green and show the changing options
 void purplePage(){
   webserver.send(200, "text/html", webpageBuilder());
   colorWipe(strip.Color(139,0,139),50); // Purple
 }
-
+// Change color to pink and show the changing options
 void pinkPage(){
   webserver.send(200, "text/html", webpageBuilder());
   colorWipe(strip.Color(139,0,139),50); //Pink
 }
-
+// Change color to yellow and show the changing options
 void yellowPage(){
   webserver.send(200, "text/html", webpageBuilder());
   colorWipe(strip.Color(255,255,0),50); // Yellow
 }
-
+// Change to rainbow and show the changing options
 void rainbowPage(){
   webserver.send(200, "text/html", webpageBuilder());
   rainbow(20);
 }
-
+// Will build the webpage, called by other page options to keep the code down
 String webpageBuilder(){
   return "<b>Change The Color Here</b><br>Change To: <a href=\"blue\">Blue</a><br>Change To: <a href=\"green\">Green</a><br>Change To: <a href=\"purple\">Purple</a><br>Change To: <a href=\"pink\">Pink</a><br>Chagne To: <a href=\"yellow\">Yellow</a><br>Change To: <a href=\"rainbow\">Rainbow</a>";
 }
-
+// SETUP
 void setup() {
   Serial.begin(115200);
   Serial.println();
@@ -104,7 +106,7 @@ void setup() {
 
   int first_run = 0; 
 }
-
+// LOOP
 void loop() {
   
   webserver.handleClient();
@@ -124,7 +126,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
     delay(wait);
   }
 }
-
+// RAINBOW
 void rainbow(uint8_t wait) {
   uint16_t i, j;
 
