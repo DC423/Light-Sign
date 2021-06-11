@@ -70,6 +70,16 @@ void yellowPage(){
   webserver.send(200, "text/html", webpageBuilder());
   colorWipe(strip.Color(255,255,0),50); // Yellow
 }
+// Turn on to white (original state)
+void onPage(){
+  webserver.send(200, "text/html", webpageBuilder());
+  colorWipe(strip.Color(255,255,255),50); // "White"
+}
+// Turn off by setting to black
+void offPage(){
+  webserver.send(200, "text/html", webpageBuilder());
+  colorWipe(strip.Color(0,0,0),50); // Off
+}
 // Change to rainbow and show the changing options
 void rainbowPage(){
   webserver.send(200, "text/html", webpageBuilder());
@@ -77,7 +87,7 @@ void rainbowPage(){
 }
 // Will build the webpage, called by other page options to keep the code down
 String webpageBuilder(){
-  return "<b>Change The Color Here</b><br>Change To: <a href=\"blue\">Blue</a><br>Change To: <a href=\"green\">Green</a><br>Change To: <a href=\"purple\">Purple</a><br>Change To: <a href=\"pink\">Pink</a><br>Chagne To: <a href=\"yellow\">Yellow</a><br>Change To: <a href=\"rainbow\">Rainbow</a>";
+  return "<b>Change The Color Here</b><br>Change To: <a href=\"/color/blue\">Blue</a><br>Change To: <a href=\"green\">Green</a><br>Change To: <a href=\"/color/purple\">Purple</a><br>Change To: <a href=\"/color/pink\">Pink</a><br>Chagne To: <a href=\"/color/yellow\">Yellow</a><br>Change To: <a href=\"/action/rainbow\">Rainbow</a>";
 }
 // SETUP
 void setup() {
@@ -91,12 +101,14 @@ void setup() {
   // Start Webserver
   webserver.on("/", rootPage); 
   webserver.on("/LightShow", lightshowPage);
-  webserver.on("/blue", bluePage);
-  webserver.on("/green", greenPage);
-  webserver.on("/purple",purplePage);
-  webserver.on("/pink",pinkPage);
-  webserver.on("/yellow",yellowPage);
-  webserver.on("/rainbow",rainbowPage);
+  webserver.on("/color/blue", bluePage);
+  webserver.on("/color/green", greenPage);
+  webserver.on("/color/purple",purplePage);
+  webserver.on("/color/pink",pinkPage);
+  webserver.on("/color/yellow",yellowPage);
+  webserver.on("/action/rainbow",rainbowPage);
+  webserver.on("/<random>/off",offPage);
+  webserver.on("/<random>/on", onPage);
   webserver.onNotFound(notfoundPage);
   webserver.begin();
   // Start the LED Strip
