@@ -1,3 +1,11 @@
+//
+// Author: Stephen Hilt 
+// Purpose: Control a D1 Mini that is connected to a NeoPixel LED STrip for the DC423 Sign
+//          That was cut from Acrlyic at Chatt*Lab with the help of Jeff. 
+//          
+//  Version 0.0.0.0.0.0.0.0.1
+//  Published: 6.12.2021
+//
 #include <Ethernet.h>
 #include <Adafruit_NeoPixel.h>
 #include <ESP8266WiFi.h>
@@ -9,10 +17,10 @@ const char *WIFI_SSID = "SSID";
 const char *WIFI_PASS = "PASSWORD";
 
 // What PIN the NeoPixel is on
-// This is D1 on the D1 Mini, so Pin 5
+// Our Case is D1 on the D1 Mini, so PIN 5 
 #define PIN 5
-// Setup variable to use to turn the color white for the first run
 int first_run; 
+
 // Create Webserver on port 1337
 ESP8266WebServer webserver(1337);
 
@@ -25,71 +33,154 @@ ESP8266WebServer webserver(1337);
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
-// Go to http://192.168.4.1:1337 in a web browser
-//connected to this access point to see it. this will change the LED's Red warning someone is on server
-//
+/* Just a little test message.  Go to http://192.168.4.1:1337 in a web browser
+ * connected to this access point to see it.
+ */
 void rootPage() {
-  webserver.send(200, "text/html", "<h1>ZnNrIG9mZiB5b3Ugd2FubmEgYmUgaGFja2Vy</h1>");
-  colorWipe(strip.Color(255, 0, 0), 50); // Turn Strip Red
+  webserver.send(200, "text/html", "<h1>BASE64MESSAGETOTROLL</h1>");
+  dc423Strip(strip.Color(255, 255, 255),strip.Color(255, 0, 0), 50); // Turn Strip Red
    
 }
 // 404 Page to be desplayed 
-// having issueschanging the color, every page I go to it loads the 404 so will blink RED 
 void notfoundPage() {
   webserver.send(200, "text/plain", "DC423: YOU'VE MADE THE HACKER UNHAPPY");
+  // having issues so this really doesn't run
   if (first_run == 0){
-    theaterChase(strip.Color(127, 0, 0), 50); // Chase Strip Red 
+    dc423Strip(strip.Color(255, 255, 255),strip.Color(127, 0, 0), 50); // Chase Strip Red 
   }
 }
-// This will be the page where the control of the lightshow happens. This is the main control page 
+// This will be the page where the control of the lightshow happens. 
 void lightshowPage(){
   webserver.send(200, "text/html", webpageBuilder()); 
 }
-// Change color to blue, and show the changing options
+// Show Page and Turn LED's Blue
 void bluePage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(0, 0, 255), 50); // Blue
+  dc423Strip(strip.Color(0, 0, 255),strip.Color(0, 0, 255), 50); // Blue
 }
-// Change color to green and show the changing options
+// Show Page and turn LED's Green
 void greenPage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(0,255,0),50); // Green
+  dc423Strip(strip.Color(0,255,0),strip.Color(0,255,0),50); // Green
 }
-// Change color to green and show the changing options
+// Show Page and Turn LED's Purple
 void purplePage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(139,0,139),50); // Purple
+  dc423Strip(strip.Color(139,0,139),strip.Color(139,0,139),50); // Purple
 }
-// Change color to pink and show the changing options
+// Show Page and Turn LED's Pink
 void pinkPage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(139,0,139),50); //Pink
+  dc423Strip(strip.Color(255,20,147),strip.Color(255,20,147),50); //Pink
 }
-// Change color to yellow and show the changing options
+// Show Page and Turn LED's Yellow
 void yellowPage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(255,255,0),50); // Yellow
+  dc423Strip(strip.Color(255,255,0),strip.Color(255,255,0),50); // Yellow
 }
-// Turn on to white (original state)
-void onPage(){
+// Show Page and turn LED's Orange
+void orangePage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(255,255,255),50); // "White"
+  dc423Strip(strip.Color(255,140,0),strip.Color(255,140,0),50); // Orange
 }
-// Turn off by setting to black
+// Show Page and turn LED's White
+void whitePage(){
+  webserver.send(200, "text/html", webpageBuilder());
+  dc423Strip(strip.Color(255,255,255),strip.Color(255,255,255),50); // "White"
+}
+// Show Page and turn LED's Off (Black)
 void offPage(){
   webserver.send(200, "text/html", webpageBuilder());
-  colorWipe(strip.Color(0,0,0),50); // Off
+  dc423Strip(strip.Color(0,0,0),strip.Color(0,0,0),50); // Off
 }
-// Change to rainbow and show the changing options
-void rainbowPage(){
+// Inside Lights change White, Outside Turns Purple
+void wpPage(){
   webserver.send(200, "text/html", webpageBuilder());
-  rainbow(20);
+  dc423Strip(strip.Color(255,255,255),strip.Color(139,0,139),50); // white-purple
 }
-// Will build the webpage, called by other page options to keep the code down
+// Show Page and change LED's to random colors (each LED is seperate) 
+void ranPage(){
+  webserver.send(200, "text/html", webpageBuilder());
+  randomStrip(); // random colors
+}
+
+// Build the webpage so each page looks the same
 String webpageBuilder(){
-  return "<b>Change The Color Here</b><br>Change To: <a href=\"/color/blue\">Blue</a><br>Change To: <a href=\"green\">Green</a><br>Change To: <a href=\"/color/purple\">Purple</a><br>Change To: <a href=\"/color/pink\">Pink</a><br>Chagne To: <a href=\"/color/yellow\">Yellow</a><br>Change To: <a href=\"/action/rainbow\">Rainbow</a>";
+  return "<b>Change The Color Here</b>\
+  <br>Change To: <form method=\"get\" action=\"/blue\"> \
+    <button type=\"submit\">Blue</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/green\"> \
+    <button type=\"submit\">Green</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/purple\"> \
+    <button type=\"submit\">Purple</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/pink\"> \
+    <button type=\"submit\">Pink</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/yellow\"> \
+    <button type=\"submit\">Yellow</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/orange\"> \
+    <button type=\"submit\">Orange</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/white-purple\"> \
+    <button type=\"submit\">white-purple</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/white\"> \
+    <button type=\"submit\">White</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/random\"> \
+    <button type=\"submit\">random</button>\
+  </form>\
+  <br>Change To: <form method=\"get\" action=\"/dc423/off\"> \
+    <button type=\"submit\">Off</button>\
+  </form>";
+  
 }
-// SETUP
+
+// Function Written to contorol the light strip for our use
+// Under the sign is 0-11 
+// Outside the sign is 12 - strip.numPixels()
+// Arguments are two colors Inside, and outside and then a number for how long to wait 
+// Before changing the next pixel. 
+void dc423Strip(uint32_t c1, uint32_t c2, uint8_t wait){
+  // Loop through each pixel 
+  for (int i = 0; i < strip.numPixels(); i++){
+    // This is for under the sign
+    if (i < 11){
+      strip.setPixelColor(i, c1);
+      strip.show();
+    }
+    // This is for outside of the sign 
+    else 
+    {
+      strip.setPixelColor(i, c2);
+      strip.show();
+    }
+    delay(wait);
+  }
+  
+}
+// Change each Pixel on the strip to a different random color 
+// 
+void randomStrip(){
+  // Setup Values before the loop
+  int ran1 = 0;
+  int ran2 = 0;
+  int ran3 = 0;
+  // Loop through each pixel in the strip
+  for (int i = 0; i < strip.numPixels(); i++){
+    ran1 = random(255);
+    ran2 = random(255);
+    ran3 = random(255);
+    strip.setPixelColor(i, strip.Color(ran1,ran2,ran3));
+    strip.show();
+    delay(50);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println();
@@ -101,117 +192,34 @@ void setup() {
   // Start Webserver
   webserver.on("/", rootPage); 
   webserver.on("/LightShow", lightshowPage);
-  webserver.on("/color/blue", bluePage);
-  webserver.on("/color/green", greenPage);
-  webserver.on("/color/purple",purplePage);
-  webserver.on("/color/pink",pinkPage);
-  webserver.on("/color/yellow",yellowPage);
-  webserver.on("/action/rainbow",rainbowPage);
-  webserver.on("/<random>/off",offPage);
-  webserver.on("/<random>/on", onPage);
+  webserver.on("/blue", bluePage);
+  webserver.on("/green", greenPage);
+  webserver.on("/purple",purplePage);
+  webserver.on("/pink",pinkPage);
+  webserver.on("/yellow",yellowPage);
+  webserver.on("/orange",orangePage);
+  webserver.on("/white-purple",wpPage);
+  webserver.on("/dc423/off",offPage);
+  webserver.on("/white", whitePage);
+  webserver.on("/random", ranPage);
   webserver.onNotFound(notfoundPage);
   webserver.begin();
   // Start the LED Strip
   strip.begin();
   strip.setBrightness(50);
   strip.show(); // Initialize all pixels to 'off'
-
   int first_run = 0; 
+
 }
-// LOOP
+
 void loop() {
   
   webserver.handleClient();
+  // Only want to set up the strip once, otherwise it will always be changing it back to this
   if (first_run == 0){
-    //colorWipe(strip.Color(0, 255, 0), 50); // Green
-    colorWipe(strip.Color(255,255,255), 0); // White
+    dc423Strip(strip.Color(255,255,255),strip.Color(139,0,139),50);
     first_run = 1; 
   }
 
 }
 
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-  for (uint16_t i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-    strip.show();
-    delay(wait);
-  }
-}
-// RAINBOW
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for (j = 0; j < 256; j++) {
-    for (i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i + j) & 255));
-      Serial.println(Wheel((i+j))); 
-    }
-    strip.show();
-    delay(wait);
-  }
-}
-
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
-
-  for (j = 0; j < 256 * 5; j++) { // 5 cycles of all colors on wheel
-    for (i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-    }
-    strip.show();
-    delay(wait);
-  }
-}
-
-//Theatre-style crawling lights.
-void theaterChase(uint32_t c, uint8_t wait) {
-  for (int j = 0; j < 10; j++) { //do 10 cycles of chasing
-    for (int q = 0; q < 3; q++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, c);  //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
-      }
-    }
-  }
-}
-
-//Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-  for (int j = 0; j < 256; j++) {   // cycle all 256 colors in the wheel
-    for (int q = 0; q < 3; q++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, Wheel( (i + j) % 255)); //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
-      }
-    }
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if (WheelPos < 85) {
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  if (WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  WheelPos -= 170;
-  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-}
